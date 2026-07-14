@@ -1,4 +1,4 @@
-import { Scan, ClipboardList, BarChart3, Users, Upload, Cpu, Archive, FileText, Settings, LogOut } from "lucide-react";
+import { Scan, ClipboardList, BarChart3, Users, Upload, Cpu, Archive, FileText, Settings, LogOut, TableProperties } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
@@ -25,6 +25,7 @@ const managementNav = [
   { title: "Clientes", url: "/clients", icon: Users },
   { title: "Arquivo", url: "/archive", icon: Archive },
   { title: "Relatórios", url: "/reports", icon: FileText },
+  { title: "Levantamento", url: "/levantamento", icon: TableProperties },
 ];
 
 const systemNav = [

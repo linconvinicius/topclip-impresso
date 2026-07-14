@@ -2,13 +2,19 @@ import { motion } from "framer-motion";
 import { Cpu, CheckCircle2, AlertCircle, Clock, Scan } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/features/StatusBadge";
-import { mockScans } from "@/lib/mockData";
-import { Progress } from "@/components/ui/progress";
+import { fetchQueue } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 const statusOrder = ['ocr_processing', 'nlp_processing', 'pending', 'completed', 'error'];
 
 export default function ProcessingPage() {
-  const sorted = [...mockScans].sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
+  const { data: scans = [], isLoading } = useQuery({
+    queryKey: ["queue"],
+    queryFn: fetchQueue,
+    refetchInterval: 5000,
+  });
+
+  const sorted = [...(scans as any[])].sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
   const active = sorted.filter(s => s.status === 'ocr_processing' || s.status === 'nlp_processing');
   const pending = sorted.filter(s => s.status === 'pending');
   const completed = sorted.filter(s => s.status === 'completed');
@@ -45,7 +51,9 @@ export default function ProcessingPage() {
       </div>
 
       {/* Active Processing */}
-      {active.length > 0 && (
+      {isLoading ? (
+        <div className="py-12 text-center text-muted-foreground animate-pulse">Consultando fila de processamento...</div>
+      ) : active.length > 0 ? (
         <Card className="surface-elevated">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -69,7 +77,7 @@ export default function ProcessingPage() {
             ))}
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* Queue */}
       <Card className="surface-elevated">
@@ -77,6 +85,9 @@ export default function ProcessingPage() {
           <CardTitle className="text-sm font-medium text-muted-foreground">Fila Completa</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
+          {sorted.length === 0 && !isLoading && (
+            <div className="py-8 text-center text-muted-foreground uppercase text-xs tracking-wider">Fila vazia</div>
+          )}
           {sorted.map((scan) => (
             <div key={scan.id} className="flex items-center gap-4 py-3 px-3 rounded-md hover:bg-secondary/50 transition-colors">
               <span className="text-sm font-mono-data text-foreground flex-1 truncate">{scan.original_filename}</span>

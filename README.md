@@ -1,73 +1,186 @@
-# Welcome to your Lovable project
+# TopClip Impresso
 
-## Project info
+Sistema de **Levantamento Diário de Páginas** de revistas e jornais para a TopClip.  
+Automatiza a coleta, processamento via OCR, armazenamento e visualização de clippings impressos.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## Visão Geral
 
-There are several ways of editing your application.
+O **TopClip Impresso** é uma aplicação full-stack composta por:
 
-**Use Lovable**
+| Camada | Tecnologia | Descrição |
+|--------|-----------|-----------|
+| **Frontend** | React + TypeScript + Vite | Interface de gestão de clippings e levantamentos |
+| **Backend** | FastAPI + Python | API REST, workers Celery, scrapers e OCR |
+| **Banco de Dados** | SQL Server (via pyodbc/SQLAlchemy) | Clusters de produção e leitura |
+| **Fila de Tarefas** | Celery + Redis | Processamento assíncrono de páginas |
+| **OCR** | Tesseract + PyMuPDF | Extração de texto de PDFs e imagens |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## Funcionalidades
 
-**Use your preferred IDE**
+- 📰 **Levantamento diário** — Painel centralizado para controle de edições por veículo
+- ✂️ **Clippings** — Registro e busca de clips por cliente, veículo e data
+- 🔍 **Varredura por palavra-chave** — Busca OCR em PDFs de revistas e jornais
+- 🖼️ **Editor de imagem** — Recorte e ajuste de clippings diretamente no browser
+- 📊 **Relatórios** — Dashboard com métricas de produção e cobertura
+- 🗄️ **Arquivo** — Histórico de edições processadas
+- ⚙️ **Configurações** — Cadastro de fontes, clientes e parâmetros do sistema
+- 🤖 **Workers** — Scrapers automáticos para portais (GoRead, GloboMais, FTP)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Estrutura do Projeto
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+topclip-impresso/
+├── backend/                  # API FastAPI + workers
+│   ├── app/
+│   │   ├── api/endpoints/    # Rotas REST
+│   │   ├── core/             # Configurações e settings
+│   │   ├── db/               # Sessão e conexões SQL Server
+│   │   ├── models/           # Modelos SQLAlchemy
+│   │   ├── repositories/     # Acesso a dados
+│   │   ├── services/         # Lógica de negócio (OCR, scrapers, PDF)
+│   │   └── workers/          # Tasks Celery
+│   ├── alembic/              # Migrações de banco
+│   ├── tests/                # Testes automatizados
+│   ├── requirements.txt
+│   ├── .env.example          # Template de variáveis de ambiente
+│   └── worker.py             # Entrypoint do worker Celery
+│
+├── src/                      # Frontend React
+│   ├── components/           # Componentes reutilizáveis (UI + features)
+│   ├── hooks/                # Custom hooks
+│   ├── lib/                  # Utilitários e cliente API
+│   └── pages/                # Páginas da aplicação
+│
+├── public/                   # Assets estáticos
+├── index.html
+├── vite.config.ts
+├── tailwind.config.ts
+└── package.json
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Pré-requisitos
 
-**Use GitHub Codespaces**
+### Frontend
+- [Node.js](https://nodejs.org/) 18+
+- npm 9+
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Backend
+- Python 3.11+
+- [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki) instalado e no PATH
+- Redis (para Celery)
+- Driver ODBC para SQL Server (`ODBC Driver 17 for SQL Server`)
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Instalação e Execução
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 1. Frontend
 
-## How can I deploy this project?
+```bash
+# Instale as dependências
+npm install
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+# Inicie o servidor de desenvolvimento
+npm run dev
+# → Acesse em http://localhost:5173
+```
 
-## Can I connect a custom domain to my Lovable project?
+### 2. Backend
 
-Yes, you can!
+```bash
+cd backend
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Crie e ative o ambiente virtual
+python -m venv venv
+venv\Scripts\activate      # Windows
+# source venv/bin/activate # Linux/macOS
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Instale as dependências
+pip install -r requirements.txt
+
+# Configure as variáveis de ambiente
+copy .env.example .env
+# Edite o .env com suas credenciais
+
+# Execute a API
+python -m app.main
+# → API disponível em http://localhost:8000
+# → Documentação em http://localhost:8000/docs
+```
+
+### 3. Worker Celery (processamento assíncrono)
+
+```bash
+cd backend
+celery -A worker.celery_app worker --loglevel=info
+```
+
+---
+
+## Variáveis de Ambiente
+
+Copie `backend/.env.example` para `backend/.env` e preencha:
+
+| Variável | Descrição |
+|----------|-----------|
+| `DB_LEITOR_HOST` | Host do cluster SQL Server de leitura |
+| `DB_PRODUCAO_HOST` | Host do cluster SQL Server de produção |
+| `DB_USER` / `DB_PASSWORD` | Credenciais do banco |
+| `REDIS_URL` | URL do Redis (ex: `redis://localhost:6379/0`) |
+| `TESSERACT_PATH` | Caminho do executável do Tesseract |
+| `DOWNLOAD_PATH` | Diretório para PDFs baixados |
+| `API_PORT` | Porta da API (padrão: `8000`) |
+
+---
+
+## Scripts Disponíveis
+
+### Frontend
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run lint` | Verificação de lint |
+| `npm test` | Executa testes unitários |
+
+---
+
+## Stack Tecnológica
+
+**Frontend**
+- [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/) — build tool
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- [TanStack Query](https://tanstack.com/query) — gerenciamento de estado assíncrono
+- [React Router](https://reactrouter.com/) — roteamento
+- [Framer Motion](https://www.framer.com/motion/) — animações
+- [Recharts](https://recharts.org/) — gráficos
+
+**Backend**
+- [FastAPI](https://fastapi.tiangolo.com/) — framework REST
+- [SQLAlchemy 2](https://www.sqlalchemy.org/) — ORM
+- [Alembic](https://alembic.sqlalchemy.org/) — migrações
+- [Celery](https://docs.celeryq.dev/) — fila de tarefas
+- [Playwright](https://playwright.dev/python/) — automação de browser
+- [PyMuPDF](https://pymupdf.readthedocs.io/) + [pytesseract](https://github.com/madmaze/pytesseract) — OCR
+
+---
+
+## Contribuindo
+
+1. Crie uma branch a partir de `main`: `git checkout -b feat/minha-feature`
+2. Faça suas alterações e adicione testes quando aplicável
+3. Abra um Pull Request com uma descrição clara da mudança
+
+---
+
+*TopClip Impresso — Desenvolvido internamente para operações da TopClip.*

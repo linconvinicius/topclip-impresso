@@ -1,9 +1,10 @@
-import { FileText, Download, Calendar } from "lucide-react";
+import { FileText, Download, Calendar, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { dashboardStats } from "@/lib/mockData";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { fetchQueueStats, fetchClients } from "@/lib/api";
 
 const sentimentData = [
   { name: "Positivo", value: 45, color: "hsl(160, 84%, 39%)" },
@@ -12,6 +13,18 @@ const sentimentData = [
 ];
 
 export default function ReportsPage() {
+  const { data: statsData, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["queueStats"],
+    queryFn: fetchQueueStats,
+    refetchInterval: 30000,
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ["clients"],
+    queryFn: fetchClients,
+    refetchInterval: 60000,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -35,18 +48,18 @@ export default function ReportsPage() {
               <SelectItem value="today">Hoje</SelectItem>
               <SelectItem value="week">Última Semana</SelectItem>
               <SelectItem value="month">Último Mês</SelectItem>
-              <SelectItem value="quarter">Último Trimestre</SelectItem>
             </SelectContent>
           </Select>
           <Select defaultValue="all">
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue />
+            <SelectTrigger className="w-full sm:w-[240px]">
+              <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Selecione o Cliente" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Clientes</SelectItem>
-              <SelectItem value="petrobras">Petrobras</SelectItem>
-              <SelectItem value="bb">Banco do Brasil</SelectItem>
-              <SelectItem value="embraer">Embraer</SelectItem>
+              {(clients as any[]).map(c => (
+                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </CardContent>
@@ -58,14 +71,18 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Volume por Dia</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={dashboardStats.volume_by_day}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                <Tooltip />
-                <Bar dataKey="clips" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {isLoadingStats ? (
+              <div className="h-[220px] flex items-center justify-center text-muted-foreground animate-pulse">Carregando dados...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={statsData?.volume_by_day || []}>
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 10 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 10 }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--secondary))', opacity: 0.1 }} />
+                  <Bar dataKey="clips" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -76,10 +93,10 @@ export default function ReportsPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={sentimentData} layout="vertical">
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
+                <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} width={70} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                   {sentimentData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
@@ -91,10 +108,10 @@ export default function ReportsPage() {
       </div>
 
       <Card className="surface-elevated">
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-8 text-center border-border/40">
           <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground">Relatório pronto para exportação</p>
-          <p className="text-xs text-muted-foreground mt-1">Selecione período e cliente, depois clique em "Exportar PDF"</p>
+          <p className="text-sm font-medium text-foreground">Relatório consolidado de monitoramento</p>
+          <p className="text-xs text-muted-foreground mt-1">Os dados acima refletem o processamento real da plataforma.</p>
         </CardContent>
       </Card>
     </div>

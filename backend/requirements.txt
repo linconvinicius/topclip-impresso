@@ -1,0 +1,39 @@
+# Web Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Database
+pyodbc==5.2.0
+sqlalchemy==2.0.36
+alembic==1.14.1
+
+# Async
+celery==5.4.0
+redis==5.2.1
+
+# Browser Automation
+playwright==1.49.1
+
+# OCR
+pytesseract==0.3.13
+Pillow==11.1.0
+
+# PDF Processing
+PyMuPDF==1.25.3
+pdf2image==1.17.0
+
+# FTP
+pyftpdlib==2.0.1
+
+# Utils
+python-dotenv==1.0.1
+pydantic==2.10.4
+pydantic-settings==2.7.1
+httpx==0.28.1
+apscheduler==3.11.0
+loguru==0.7.3
+
+# Data import
+openpyxl==3.1.5
+odfpy==1.4.1

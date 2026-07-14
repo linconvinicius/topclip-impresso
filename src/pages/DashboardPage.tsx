@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { BarChart3, ClipboardList, Cpu, TrendingUp, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { dashboardStats, mockClips } from "@/lib/mockData";
 import { SentimentBadge } from "@/components/features/StatusBadge";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+
+import { useQuery } from "@tanstack/react-query";
+import { fetchQueueStats, fetchClips, fetchClients } from "@/lib/api";
 
 const fadeUp = {
   initial: { opacity: 0, y: 12 },
@@ -12,8 +14,39 @@ const fadeUp = {
 };
 
 export default function DashboardPage() {
-  const stats = dashboardStats;
-  const recentClips = mockClips.slice(0, 5);
+  const { data: statsData, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["queueStats"],
+    queryFn: fetchQueueStats,
+    refetchInterval: 30000,
+  });
+
+  const { data: clipsData = [], isLoading: isLoadingClips } = useQuery({
+    queryKey: ["recentClips"],
+    queryFn: () => fetchClips(5),
+    refetchInterval: 30000,
+  });
+
+  const { data: clientsData = [] } = useQuery({
+    queryKey: ["clients"],
+    queryFn: fetchClients,
+    refetchInterval: 60000,
+  });
+
+  const clientsMap = (clientsData as any[]).reduce((acc, client) => {
+    acc[client.id] = client.name;
+    return acc;
+  }, {} as Record<number, string>);
+
+  const stats = {
+    clips_today: statsData?.clips_today ?? 0,
+    clips_week: statsData?.clips_week ?? 0,
+    active_queue: statsData?.pending ?? 0,
+    clients_active: clientsData.length > 0 ? clientsData.length : 0,
+    volume_by_day: statsData?.volume_by_day ?? [],
+    sentiment_breakdown: statsData?.sentiment_breakdown ?? { positive: 0, neutral: 100, negative: 0 },
+  };
+
+  const recentClips = clipsData;
 
   return (
     <div className="space-y-6">
@@ -57,21 +90,25 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={stats.volume_by_day}>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} className="text-xs" tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(0, 0%, 100%)',
-                      border: '1px solid hsl(214, 32%, 91%)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                    }}
-                  />
-                  <Bar dataKey="clips" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {isLoadingStats ? (
+                <div className="h-[240px] flex items-center justify-center text-muted-foreground animate-pulse">Carregando...</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={stats.volume_by_day}>
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} className="text-xs" tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(0, 0%, 100%)',
+                        border: '1px solid hsl(214, 32%, 91%)',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <Bar dataKey="clips" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -116,20 +153,24 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-0 divide-y divide-border">
-              {recentClips.map((clip) => (
+              {isLoadingClips ? (
+                <div className="py-8 text-center text-muted-foreground animate-pulse">Carregando clips recentes...</div>
+              ) : recentClips.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">Nenhum clip encontrado hoje.</div>
+              ) : (recentClips as any[]).map((clip) => (
                 <div key={clip.id} className="flex items-center gap-4 py-3.5 hover:bg-secondary/50 -mx-4 px-4 transition-colors rounded-md cursor-pointer">
                   <div className="w-14 h-14 rounded-md bg-secondary flex items-center justify-center shrink-0">
                     <ClipboardList className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{clip.extracted_text_snippet}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{clip.title || clip.snippet}</p>
                     <p className="text-xs text-muted-foreground font-mono-data mt-0.5">
-                      {clip.publication} · Pág {clip.page_number} · {clip.column_cm2}cm²
+                      {clientsMap[clip.client_id] || `Cliente ${clip.client_id}`} · {clip.publication}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <SentimentBadge sentiment={clip.sentiment} />
-                    <span className="text-xs text-muted-foreground font-mono-data">{clip.date}</span>
+                    <SentimentBadge sentiment="neutral" />
+                    <span className="text-xs text-muted-foreground font-mono-data">{clip.date ? new Date(clip.date).toLocaleDateString("pt-BR") : "---"}</span>
                   </div>
                 </div>
               ))}
