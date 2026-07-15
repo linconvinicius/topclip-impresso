@@ -1,6 +1,6 @@
 # TopClip Impresso
 
-Sistema de **Levantamento Diário de Páginas** de revistas e jornais para a TopClip.  
+Sistema de **Levantamento Diário de Páginas** de revistas e jornais para a TopClip.
 Automatiza a coleta, processamento via OCR, armazenamento e visualização de clippings impressos.
 
 ---
@@ -9,13 +9,13 @@ Automatiza a coleta, processamento via OCR, armazenamento e visualização de cl
 
 O **TopClip Impresso** é uma aplicação full-stack composta por:
 
-| Camada | Tecnologia | Descrição |
-|--------|-----------|-----------|
-| **Frontend** | React + TypeScript + Vite | Interface de gestão de clippings e levantamentos |
-| **Backend** | FastAPI + Python | API REST, workers Celery, scrapers e OCR |
-| **Banco de Dados** | SQL Server (via pyodbc/SQLAlchemy) | Clusters de produção e leitura |
-| **Fila de Tarefas** | Celery + Redis | Processamento assíncrono de páginas |
-| **OCR** | Tesseract + PyMuPDF | Extração de texto de PDFs e imagens |
+| Camada                    | Tecnologia                         | Descrição                                       |
+| ------------------------- | ---------------------------------- | ------------------------------------------------- |
+| **Frontend**        | React + TypeScript + Vite          | Interface de gestão de clippings e levantamentos |
+| **Backend**         | FastAPI + Python                   | API REST, workers Celery, scrapers e OCR          |
+| **Banco de Dados**  | SQL Server (via pyodbc/SQLAlchemy) | Clusters de produção e leitura                  |
+| **Fila de Tarefas** | Celery + Redis                     | Processamento assíncrono de páginas             |
+| **OCR**             | Tesseract + PyMuPDF                | Extração de texto de PDFs e imagens             |
 
 ---
 
@@ -69,10 +69,12 @@ topclip-impresso/
 ## Pré-requisitos
 
 ### Frontend
+
 - [Node.js](https://nodejs.org/) 18+
 - npm 9+
 
 ### Backend
+
 - Python 3.11+
 - [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki) instalado e no PATH
 - Redis (para Celery)
@@ -129,15 +131,15 @@ celery -A worker.celery_app worker --loglevel=info
 
 Copie `backend/.env.example` para `backend/.env` e preencha:
 
-| Variável | Descrição |
-|----------|-----------|
-| `DB_LEITOR_HOST` | Host do cluster SQL Server de leitura |
-| `DB_PRODUCAO_HOST` | Host do cluster SQL Server de produção |
-| `DB_USER` / `DB_PASSWORD` | Credenciais do banco |
-| `REDIS_URL` | URL do Redis (ex: `redis://localhost:6379/0`) |
-| `TESSERACT_PATH` | Caminho do executável do Tesseract |
-| `DOWNLOAD_PATH` | Diretório para PDFs baixados |
-| `API_PORT` | Porta da API (padrão: `8000`) |
+| Variável                     | Descrição                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `DB_LEITOR_HOST`            | Host do cluster SQL Server de leitura          |
+| `DB_PRODUCAO_HOST`          | Host do cluster SQL Server de produção       |
+| `DB_USER` / `DB_PASSWORD` | Credenciais do banco                           |
+| `REDIS_URL`                 | URL do Redis (ex:`redis://localhost:6379/0`) |
+| `TESSERACT_PATH`            | Caminho do executável do Tesseract            |
+| `DOWNLOAD_PATH`             | Diretório para PDFs baixados                  |
+| `API_PORT`                  | Porta da API (padrão:`8000`)                |
 
 ---
 
@@ -145,18 +147,19 @@ Copie `backend/.env.example` para `backend/.env` e preencha:
 
 ### Frontend
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run lint` | Verificação de lint |
-| `npm test` | Executa testes unitários |
+| Comando           | Descrição                 |
+| ----------------- | --------------------------- |
+| `npm run dev`   | Servidor de desenvolvimento |
+| `npm run build` | Build de produção         |
+| `npm run lint`  | Verificação de lint       |
+| `npm test`      | Executa testes unitários   |
 
 ---
 
 ## Stack Tecnológica
 
 **Frontend**
+
 - [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - [Vite](https://vitejs.dev/) — build tool
 - [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
@@ -166,6 +169,7 @@ Copie `backend/.env.example` para `backend/.env` e preencha:
 - [Recharts](https://recharts.org/) — gráficos
 
 **Backend**
+
 - [FastAPI](https://fastapi.tiangolo.com/) — framework REST
 - [SQLAlchemy 2](https://www.sqlalchemy.org/) — ORM
 - [Alembic](https://alembic.sqlalchemy.org/) — migrações

@@ -5,6 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Base path para GitHub Pages (https://linconvinicius.github.io/topclip-impresso/)
+  base: mode === "production" ? "/topclip-impresso/" : "/",
   server: {
     host: "::",
     port: 8080,
@@ -19,3 +21,4 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
+

@@ -27,8 +27,9 @@ function diasDoMes(mes: string): string[] {
 
 function diaLabel(dataStr: string): string {
   const d = new Date(dataStr + "T12:00:00");
-  return String(d.getDate()).padStart(2, "0");
+  return `Dia ${d.getDate()}`;
 }
+
 
 function mesLabel(mes: string): string {
   const [ano, m] = mes.split("-").map(Number);
