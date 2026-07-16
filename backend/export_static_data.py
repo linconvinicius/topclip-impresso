@@ -40,7 +40,7 @@ def exportar(ano: int, mes: int, destino: str):
         {
             "data": str(r[0]),
             "veiculo": r[1],
-            "tipo": "jornal" if r[2] == 1 else "revista",
+            "tipo": "jornal" if r[2] in (0, 1) else "revista",
             "total_paginas": r[3],
         }
         for r in rows
